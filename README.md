@@ -72,11 +72,13 @@ These steps are host-side and required for stable low-latency audio.
 
 ### Debian
 
+Minimal setup for RT kernel + PipeWire JACK with fixed low-latency buffers.
+
 1) Install realtime kernel and tools:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y linux-image-rt-amd64 rtkit
+sudo apt-get install -y linux-image-rt-amd64 rtkit pipewire pipewire-jack wireplumber alsa-utils
 ```
 
 2) Add user to audio group:
@@ -99,6 +101,45 @@ Create `/etc/security/limits.d/audio.conf`:
 ```bash
 uname -r
 ```
+
+5) Enable PipeWire user services:
+
+```bash
+systemctl --user enable --now pipewire pipewire-pulse wireplumber
+```
+
+6) Optional fixed latency (64/48k):
+
+Create `~/.config/pipewire/pipewire.conf.d/10-lowlatency.conf`:
+
+```ini
+context.properties = {
+    default.clock.rate = 48000
+    default.clock.quantum = 64
+    default.clock.min-quantum = 64
+    default.clock.max-quantum = 64
+}
+```
+
+Restart PipeWire:
+
+```bash
+systemctl --user restart pipewire pipewire-pulse wireplumber
+```
+
+7) Quick verification:
+
+```bash
+pw-jack jack_lsp
+ulimit -r
+ulimit -l
+```
+
+Troubleshooting tips:
+
+- If `ulimit -l` is low, confirm your user is in `audio` group and you logged out/in.
+- If you see xruns, increase `default.clock.quantum` to 128.
+- If JACK apps cannot connect, verify PipeWire user services are running.
 
 ### Arch Linux
 
