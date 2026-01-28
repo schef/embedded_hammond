@@ -1,0 +1,49 @@
+services:
+  setbfree:
+    build:
+      context: ./docker/setbfree
+    network_mode: host
+    user: "${USER_ID}:${GROUP_ID}"
+    group_add:
+      - "${AUDIO_GID}"
+      - "${VIDEO_GID}"
+    environment:
+      DISPLAY: "${DISPLAY}"
+      XAUTHORITY: /tmp/.Xauthority
+      XDG_RUNTIME_DIR: /run/user/${USER_ID}
+      HOME: /tmp
+      PIPEWIRE_LATENCY: "${PIPEWIRE_LATENCY:-64/48000}"
+      QT_X11_NO_MITSHM: "1"
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      - ${XAUTHORITY:-$HOME/.Xauthority}:/tmp/.Xauthority:ro
+      - /run/user/${USER_ID}:/run/user/${USER_ID}
+    devices:
+      - /dev/snd:/dev/snd
+      - /dev/dri:/dev/dri
+    ulimits:
+      memlock: -1
+      rtprio: 95
+    restart: unless-stopped
+
+  midi-hotplug:
+    build:
+      context: ./docker/midi-hotplug
+    network_mode: host
+    user: "${USER_ID}:${GROUP_ID}"
+    group_add:
+      - "${AUDIO_GID}"
+    environment:
+      XDG_RUNTIME_DIR: /run/user/${USER_ID}
+      HOME: /tmp
+      PIPEWIRE_LATENCY: "${PIPEWIRE_LATENCY:-64/48000}"
+      SETBFREE_MATCH: "${SETBFREE_MATCH:-setBfree}"
+      MIDI_CLIENT_EXCLUDE: "${MIDI_CLIENT_EXCLUDE:-System,Midi Through}"
+    volumes:
+      - /run/user/${USER_ID}:/run/user/${USER_ID}
+    devices:
+      - /dev/snd:/dev/snd
+    ulimits:
+      memlock: -1
+      rtprio: 95
+    restart: unless-stopped
