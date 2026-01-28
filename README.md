@@ -35,6 +35,12 @@ To auto-fullscreen in i3, set `SETBFREE_FULLSCREEN=1` and adjust
 docker compose down
 ```
 
+If you want to autostart via i3, add this to your i3 config:
+
+```text
+exec --no-startup-id sh -lc 'cd ~/git/embedded_hammond && docker compose up -d'
+```
+
 ## Debug
 
 - Check container logs:
