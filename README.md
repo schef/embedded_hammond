@@ -24,6 +24,9 @@ xhost +si:localuser:$USER
 docker compose up --build
 ```
 
+The `ui-automation` service sends the `s` key once to switch to flat view.
+If your window title differs, set `SETBFREE_WINDOW_NAME` in `.env`.
+
 4) Stop:
 
 ```bash
@@ -48,6 +51,12 @@ docker compose exec setbfree pw-jack jack_lsp -p
 
 ```bash
 docker compose exec setbfree pw-jack jack_lsp -c
+```
+
+- UI automation logs:
+
+```bash
+docker compose logs --tail=200 ui-automation
 ```
 
 - If the UI does not show, re-check X11 auth and DISPLAY:

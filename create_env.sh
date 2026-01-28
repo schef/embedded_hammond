@@ -24,6 +24,7 @@ XAUTHORITY=${xauthority}
 PIPEWIRE_LATENCY=64/48000
 SETBFREE_MATCH=setBfree
 MIDI_CLIENT_EXCLUDE=System,Midi Through
+SETBFREE_WINDOW_NAME=setBfree
 EOF
 
 printf "Wrote .env with USER_ID=%s GROUP_ID=%s\n" "${user_id}" "${group_id}"

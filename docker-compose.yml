@@ -26,6 +26,24 @@ services:
       rtprio: 95
     restart: unless-stopped
 
+  ui-automation:
+    build:
+      context: ./docker/ui-automation
+    network_mode: host
+    user: "${USER_ID}:${GROUP_ID}"
+    environment:
+      DISPLAY: "${DISPLAY}"
+      XAUTHORITY: /tmp/.Xauthority
+      SETBFREE_WINDOW_NAME: "${SETBFREE_WINDOW_NAME:-setBfree}"
+      SETBFREE_AUTOMATION_RETRIES: "${SETBFREE_AUTOMATION_RETRIES:-50}"
+      SETBFREE_AUTOMATION_INTERVAL: "${SETBFREE_AUTOMATION_INTERVAL:-0.2}"
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      - ${XAUTHORITY:-$HOME/.Xauthority}:/tmp/.Xauthority:ro
+    depends_on:
+      - setbfree
+    restart: on-failure
+
   midi-hotplug:
     build:
       context: ./docker/midi-hotplug
