@@ -146,7 +146,14 @@ ulimit -l
 Troubleshooting tips:
 
 - If `ulimit -l` is low, confirm your user is in `audio` group and you logged out/in.
-- If you see xruns, increase `default.clock.quantum` to 128.
+- If you see xruns, increase `default.clock.quantum` to 128 or 256.
+- Keep `default.clock.quantum`, `default.clock.min-quantum`, and `default.clock.max-quantum` aligned.
+- If the CPU governor is `powersave`, install `linux-cpupower` and set `performance`:
+
+```bash
+sudo apt-get install -y linux-cpupower
+sudo cpupower frequency-set -g performance
+```
 - If JACK apps cannot connect, verify PipeWire user services are running.
 
 ### Arch Linux
