@@ -58,6 +58,10 @@ def is_midi_port(port_info):
     return "midi" in port_info.get("type", "").lower()
 
 
+def is_audio_port(port_info):
+    return "audio" in port_info.get("type", "").lower()
+
+
 def find_setbfree_inputs(ports, match_text):
     match_text = match_text.lower()
     inputs = []
@@ -80,6 +84,59 @@ def list_source_ports(ports, exclude_clients):
         if "output" in info["properties"] and is_midi_port(info):
             sources.append(name)
     return sources
+
+
+def find_setbfree_audio_outputs(ports):
+    left = None
+    right = None
+    for name, info in ports.items():
+        if "setbfree" not in name.lower():
+            continue
+        if "output" not in info["properties"] or not is_audio_port(info):
+            continue
+        lower = name.lower()
+        if "outl" in lower:
+            left = name
+        elif "outr" in lower:
+            right = name
+    return left, right
+
+
+def find_physical_playback_ports(ports):
+    playback = []
+    for name, info in ports.items():
+        if "input" not in info["properties"]:
+            continue
+        if "physical" not in info["properties"]:
+            continue
+        if not is_audio_port(info):
+            continue
+        playback.append(name)
+
+    preferred = [p for p in playback if "playback_fl" in p.lower()]
+    preferred += [p for p in playback if "playback_fr" in p.lower()]
+    if len(preferred) >= 2:
+        return preferred[:2]
+
+    return playback[:2]
+
+
+def connect_audio(ports, connections):
+    left, right = find_setbfree_audio_outputs(ports)
+    if not left or not right:
+        return
+
+    playback = find_physical_playback_ports(ports)
+    if len(playback) < 2:
+        return
+
+    targets = [(left, playback[0]), (right, playback[1])]
+    for source, dest in targets:
+        if (source, dest) in connections:
+            continue
+        result = run_command(["pw-jack", "jack_connect", source, dest])
+        if result.returncode == 0:
+            print(f"[midi-hotplug] connected {source} -> {dest}")
 
 
 last_sources = set()
@@ -114,6 +171,8 @@ def connect_ports():
     exclude_clients.update({name.split(":", 1)[0].lower() for name in dest_ports})
     sources = list_source_ports(ports, exclude_clients)
     connections = get_jack_connections()
+
+    connect_audio(ports, connections)
 
     current_sources = set(sources)
     removed_sources = last_sources - current_sources
