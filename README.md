@@ -26,6 +26,8 @@ docker compose up --build
 
 The `ui-automation` service sends the `s` key once to switch to flat view.
 If your window title differs, set `SETBFREE_WINDOW_NAME` in `.env`.
+To auto-fullscreen in i3, set `SETBFREE_FULLSCREEN=1` and adjust
+`SETBFREE_FULLSCREEN_KEY` if your i3 binding differs.
 
 4) Stop:
 
